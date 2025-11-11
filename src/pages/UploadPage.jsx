@@ -29,13 +29,25 @@ const UploadPage = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Mohon upload file gambar (JPG, PNG, dll)');
+      return;
+    }
+
+    console.log('🖼️ Image uploaded:', file.name, file.type, file.size);
+
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setAiAnalysis(null); // Reset previous analysis
 
     // Auto-analyze with AI
     setIsAnalyzing(true);
+    console.log('🤖 Starting AI analysis...');
+
     try {
       const analysis = await analyzeMotifImage(file);
+      console.log('✅ AI Analysis result:', analysis);
       setAiAnalysis(analysis);
 
       // Auto-fill form dengan hasil AI
@@ -50,14 +62,23 @@ const UploadPage = () => {
         deskripsi: analysis.deskripsi || ''
       });
 
+      console.log('📝 Generating product description...');
       // Generate product description
       const description = await generateProductDescription(analysis);
+      console.log('✅ Description generated');
       setFormData(prev => ({ ...prev, deskripsi: description }));
+
     } catch (error) {
-      console.error('Error analyzing image:', error);
-      alert('Gagal menganalisis gambar. Anda bisa melanjutkan mengisi form secara manual.');
+      console.error('❌ Error analyzing image:', error);
+      // Don't show alert - form is still usable
+      setAiAnalysis({
+        nama_motif: '',
+        confidence: 0,
+        error: true
+      });
     } finally {
       setIsAnalyzing(false);
+      console.log('🏁 AI analysis completed');
     }
   };
 
@@ -181,7 +202,7 @@ const UploadPage = () => {
                   </div>
                 )}
 
-                {aiAnalysis && !isAnalyzing && (
+                {aiAnalysis && !isAnalyzing && !aiAnalysis.error && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                     <h4 className="font-bold text-green-800 mb-2 flex items-center">
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,8 +211,33 @@ const UploadPage = () => {
                       Analisis AI Selesai
                     </h4>
                     <p className="text-sm text-green-700">
-                      Confidence Score: <strong>{aiAnalysis.confidence}%</strong><br/>
-                      Form telah diisi otomatis berdasarkan hasil analisis. Silakan review dan edit jika perlu.
+                      {aiAnalysis.confidence > 0 ? (
+                        <>
+                          <strong>Motif Terdeteksi:</strong> {aiAnalysis.nama_motif}<br/>
+                          <strong>Daerah:</strong> {aiAnalysis.daerah_asal}<br/>
+                          <strong>Confidence Score:</strong> {aiAnalysis.confidence}%<br/>
+                          Form telah diisi otomatis. Silakan review dan edit jika perlu.
+                        </>
+                      ) : (
+                        <>
+                          Form telah diisi dengan template otomatis.<br/>
+                          <strong>💡 Tip:</strong> Silakan lengkapi informasi yang sesuai dengan produk Anda.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {aiAnalysis && !isAnalyzing && aiAnalysis.error && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-bold text-orange-800 mb-2 flex items-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                      </svg>
+                      AI Sedang Tidak Tersedia
+                    </h4>
+                    <p className="text-sm text-orange-700">
+                      Tidak dapat menghubungi server AI. Silakan isi form secara manual.
                     </p>
                   </div>
                 )}
