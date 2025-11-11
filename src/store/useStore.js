@@ -7,6 +7,7 @@ const useStore = create(
       // Motif data
       motifs: [],
       selectedMotif: null,
+      favorites: [], // Array of motif IDs
 
       // User data
       user: null,
@@ -42,6 +43,30 @@ const useStore = create(
       })),
 
       setSelectedMotif: (motif) => set({ selectedMotif: motif }),
+
+      // Actions untuk favorites
+      addToFavorites: (motifId) => set((state) => {
+        if (state.favorites.includes(motifId)) {
+          return state; // Already in favorites
+        }
+        return { favorites: [...state.favorites, motifId] };
+      }),
+
+      removeFromFavorites: (motifId) => set((state) => ({
+        favorites: state.favorites.filter(id => id !== motifId)
+      })),
+
+      toggleFavorite: (motifId) => set((state) => {
+        if (state.favorites.includes(motifId)) {
+          return { favorites: state.favorites.filter(id => id !== motifId) };
+        }
+        return { favorites: [...state.favorites, motifId] };
+      }),
+
+      isFavorite: (motifId) => {
+        const { favorites } = get();
+        return favorites.includes(motifId);
+      },
 
       // Actions untuk filters
       setFilters: (filters) => set({ filters }),
@@ -111,6 +136,7 @@ const useStore = create(
       name: 'kriya-storage',
       partialize: (state) => ({
         motifs: state.motifs,
+        favorites: state.favorites,
         user: state.user,
         isAuthenticated: state.isAuthenticated
       })

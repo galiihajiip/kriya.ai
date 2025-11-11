@@ -97,7 +97,10 @@ const ExplorePage = () => {
       image: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=800&q=80',
       deskripsi: 'Tenun ikat khas Sumba dengan motif tradisional yang kaya akan makna budaya',
       filosofi: 'Motif yang melambangkan keberanian dan kekuatan',
-      harga: 750000
+      harga: 750000,
+      jenis_produk: 'Tenun Ikat',
+      stok: 15,
+      kontak_pengrajin: '+6282145678901'
     },
     {
       id: 2,
@@ -108,7 +111,10 @@ const ExplorePage = () => {
       image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&q=80',
       deskripsi: 'Batik Parang adalah motif batik yang melambangkan kekuatan',
       filosofi: 'Melambangkan kekuatan dan keteguhan hati',
-      harga: 500000
+      harga: 500000,
+      jenis_produk: 'Batik Tulis',
+      stok: 20,
+      kontak_pengrajin: '+6281234567890'
     },
     {
       id: 3,
@@ -119,7 +125,10 @@ const ExplorePage = () => {
       image: 'https://images.unsplash.com/photo-1610349656925-0ec921557c70?w=800&q=80',
       deskripsi: 'Kain songket dengan benang emas khas Palembang',
       filosofi: 'Simbol kemewahan dan keanggunan',
-      harga: 1200000
+      harga: 1200000,
+      jenis_produk: 'Songket',
+      stok: 10,
+      kontak_pengrajin: '+6281398765432'
     },
     {
       id: 4,
@@ -130,7 +139,10 @@ const ExplorePage = () => {
       image: 'https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=800&q=80',
       deskripsi: 'Kain ulos tradisional Batak dengan motif geometris khas',
       filosofi: 'Melambangkan kehangatan dan kasih sayang',
-      harga: 850000
+      harga: 850000,
+      jenis_produk: 'Kain Ulos',
+      stok: 12,
+      kontak_pengrajin: '+6285267891234'
     },
     {
       id: 5,
@@ -141,7 +153,10 @@ const ExplorePage = () => {
       image: 'https://images.unsplash.com/photo-1609127102567-8a9a21dc27d8?w=800&q=80',
       deskripsi: 'Tenun khas Toraja dengan pola geometris yang indah',
       filosofi: 'Merepresentasikan status sosial dan kehormatan',
-      harga: 950000
+      harga: 950000,
+      jenis_produk: 'Tenun Tradisional',
+      stok: 8,
+      kontak_pengrajin: '+6281456789012'
     },
     {
       id: 6,
@@ -152,7 +167,10 @@ const ExplorePage = () => {
       image: 'https://images.unsplash.com/photo-1611689342806-0863700ce1e4?w=800&q=80',
       deskripsi: 'Batik Mega Mendung dengan motif awan khas Cirebon',
       filosofi: 'Melambangkan kesabaran dan keteduhan',
-      harga: 650000
+      harga: 650000,
+      jenis_produk: 'Batik Cap',
+      stok: 18,
+      kontak_pengrajin: '+6285789123456'
     },
     {
       id: 7,
@@ -163,7 +181,10 @@ const ExplorePage = () => {
       image: 'https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=800&q=80',
       deskripsi: 'Motif batik kawung yang melambangkan kesucian dan umur panjang',
       filosofi: 'Melambangkan kesempurnaan dan kesucian',
-      harga: 550000
+      harga: 550000,
+      jenis_produk: 'Batik Tulis',
+      stok: 22,
+      kontak_pengrajin: '+6281267894561'
     },
     {
       id: 8,
@@ -174,7 +195,10 @@ const ExplorePage = () => {
       image: 'https://images.unsplash.com/photo-1606217290941-e9162bd0a8fd?w=800&q=80',
       deskripsi: 'Tenun gringsing langka dari Bali dengan teknik double ikat',
       filosofi: 'Melindungi dari bahaya dan memberikan keberuntungan',
-      harga: 2500000
+      harga: 2500000,
+      jenis_produk: 'Tenun Double Ikat',
+      stok: 3,
+      kontak_pengrajin: '+6281345789123'
     }
   ];
 
