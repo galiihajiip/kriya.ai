@@ -14,6 +14,32 @@ const textModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 // Model untuk vision (image analysis) - gunakan gemini-2.5-flash (multimodal)
 const visionModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+// Fallback model jika flash overloaded
+const visionModelPro = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+const textModelPro = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+
+/**
+ * Helper function untuk retry dengan exponential backoff
+ */
+async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 2000) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const isLastRetry = i === maxRetries - 1;
+      const isOverloaded = error.message?.includes('overloaded') || error.message?.includes('503');
+
+      if (isLastRetry || !isOverloaded) {
+        throw error;
+      }
+
+      const delay = baseDelay * Math.pow(2, i);
+      console.log(`⏳ [RETRY ${i + 1}/${maxRetries}] Waiting ${delay}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
 /**
  * Helper function untuk convert file ke base64
  */
@@ -62,7 +88,7 @@ export async function analyzeMotifImage(imageFile) {
       }
     }];
 
-    console.log("🚀 [REAL AI] Sending request to Gemini 1.5 Pro (Vision)...");
+    console.log("🚀 [REAL AI] Sending request to Gemini 2.5 Flash (Vision)...");
     console.log("📊 [REAL AI] Image size:", base64Data.length, "bytes");
 
     // REAL PROMPT untuk analisis yang akurat
@@ -88,10 +114,29 @@ PENTING:
 - Jika tidak dapat mengidentifikasi, tulis "Unknown" atau "Tidak Teridentifikasi"
 - Berikan response HANYA JSON, tanpa teks lain`;
 
-    // CALL GEMINI API
-    const result = await visionModel.generateContent([prompt, ...imageParts]);
-    const response = await result.response;
-    const text = response.text();
+    let result, response, text;
+
+    // Try dengan retry dan fallback ke Pro model jika Flash overloaded
+    try {
+      // CALL GEMINI API dengan retry
+      result = await retryWithBackoff(async () => {
+        return await visionModel.generateContent([prompt, ...imageParts]);
+      });
+      response = await result.response;
+      text = response.text();
+      console.log("✅ [REAL AI] Success with gemini-2.5-flash");
+    } catch (flashError) {
+      // Jika Flash gagal, fallback ke Pro
+      console.warn("⚠️ [FALLBACK] gemini-2.5-flash failed, trying gemini-2.5-pro...");
+      console.warn("Flash error:", flashError.message);
+
+      result = await retryWithBackoff(async () => {
+        return await visionModelPro.generateContent([prompt, ...imageParts]);
+      });
+      response = await result.response;
+      text = response.text();
+      console.log("✅ [REAL AI] Success with gemini-2.5-pro (fallback)");
+    }
 
     console.log("✅ [REAL AI] Received response from Gemini API");
     console.log("📝 [REAL AI] Response preview:", text.substring(0, 300));
@@ -167,11 +212,25 @@ Ceritakan secara DETAIL tentang:
 Tulis dalam bahasa Indonesia yang menarik, sekitar 4-5 paragraf, cocok untuk edukasi.
 Gunakan informasi yang FAKTUAL dan AKURAT. Jika tidak yakin tentang sesuatu, katakan bahwa informasi tersebut bervariasi atau perlu dikonfirmasi.`;
 
-    const result = await textModel.generateContent(prompt);
-    const response = await result.response;
-    const narrative = response.text();
+    let result, response, narrative;
 
-    console.log("✅ [REAL AI] Narrative generated, length:", narrative.length);
+    try {
+      result = await retryWithBackoff(async () => {
+        return await textModel.generateContent(prompt);
+      });
+      response = await result.response;
+      narrative = response.text();
+      console.log("✅ [REAL AI] Narrative generated with gemini-2.5-flash, length:", narrative.length);
+    } catch (flashError) {
+      console.warn("⚠️ [FALLBACK] Trying gemini-2.5-pro for narrative generation...");
+      result = await retryWithBackoff(async () => {
+        return await textModelPro.generateContent(prompt);
+      });
+      response = await result.response;
+      narrative = response.text();
+      console.log("✅ [REAL AI] Narrative generated with gemini-2.5-pro (fallback), length:", narrative.length);
+    }
+
     return narrative;
 
   } catch (error) {
@@ -202,9 +261,22 @@ Format response dalam JSON array (HANYA JSON, tanpa teks lain):
   }
 ]`;
 
-    const result = await textModel.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    let result, response, text;
+
+    try {
+      result = await retryWithBackoff(async () => {
+        return await textModel.generateContent(prompt);
+      });
+      response = await result.response;
+      text = response.text();
+    } catch (flashError) {
+      console.warn("⚠️ [FALLBACK] Trying gemini-2.5-pro for similar motifs...");
+      result = await retryWithBackoff(async () => {
+        return await textModelPro.generateContent(prompt);
+      });
+      response = await result.response;
+      text = response.text();
+    }
 
     // Clean up response
     let cleanedText = text.trim();
@@ -252,11 +324,25 @@ Deskripsi harus:
 
 Fokus pada FAKTA dan KEUNIKAN produk ini secara spesifik.`;
 
-    const result = await textModel.generateContent(prompt);
-    const response = await result.response;
-    const description = response.text();
+    let result, response, description;
 
-    console.log("✅ [REAL AI] Description generated, length:", description.length);
+    try {
+      result = await retryWithBackoff(async () => {
+        return await textModel.generateContent(prompt);
+      });
+      response = await result.response;
+      description = response.text();
+      console.log("✅ [REAL AI] Description generated with gemini-2.5-flash, length:", description.length);
+    } catch (flashError) {
+      console.warn("⚠️ [FALLBACK] Trying gemini-2.5-pro for product description...");
+      result = await retryWithBackoff(async () => {
+        return await textModelPro.generateContent(prompt);
+      });
+      response = await result.response;
+      description = response.text();
+      console.log("✅ [REAL AI] Description generated with gemini-2.5-pro (fallback), length:", description.length);
+    }
+
     return description;
 
   } catch (error) {
@@ -287,9 +373,22 @@ Format response dalam JSON array (HANYA JSON, tanpa teks lain):
   }
 ]`;
 
-    const result = await textModel.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    let result, response, text;
+
+    try {
+      result = await retryWithBackoff(async () => {
+        return await textModel.generateContent(prompt);
+      });
+      response = await result.response;
+      text = response.text();
+    } catch (flashError) {
+      console.warn("⚠️ [FALLBACK] Trying gemini-2.5-pro for quiz generation...");
+      result = await retryWithBackoff(async () => {
+        return await textModelPro.generateContent(prompt);
+      });
+      response = await result.response;
+      text = response.text();
+    }
 
     // Clean up response
     let cleanedText = text.trim();
