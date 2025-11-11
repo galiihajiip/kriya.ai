@@ -86,25 +86,27 @@ const ExplorePage = () => {
     resetFilters();
   };
 
-  // Sample data untuk demo
-  const sampleMotifs = motifs.length > 0 ? motifs : [
+  // Sample data untuk demo - dengan gambar batik yang relevan
+  const sampleMotifs = [
     {
       id: 1,
       nama_motif: 'Tenun Ikat Sumba',
       daerah_asal: 'Sumba, NTT',
       warna_dominan: ['Merah', 'Hitam', 'Putih'],
       kategori: 'Geometris',
-      image: 'https://images.unsplash.com/photo-1609127102567-8a9a21dc27d8?w=500',
+      image: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=800&q=80',
+      deskripsi: 'Tenun ikat khas Sumba dengan motif tradisional yang kaya akan makna budaya',
       filosofi: 'Motif yang melambangkan keberanian dan kekuatan',
       harga: 750000
     },
     {
       id: 2,
-      nama_motif: 'Batik Parang',
+      nama_motif: 'Batik Parang Rusak',
       daerah_asal: 'Yogyakarta',
       warna_dominan: ['Coklat', 'Putih'],
       kategori: 'Geometris',
-      image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=500',
+      image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&q=80',
+      deskripsi: 'Batik Parang adalah motif batik yang melambangkan kekuatan',
       filosofi: 'Melambangkan kekuatan dan keteguhan hati',
       harga: 500000
     },
@@ -114,7 +116,8 @@ const ExplorePage = () => {
       daerah_asal: 'Palembang, Sumatera Selatan',
       warna_dominan: ['Emas', 'Merah', 'Hijau'],
       kategori: 'Flora',
-      image: 'https://images.unsplash.com/photo-1610349656925-0ec921557c70?w=500',
+      image: 'https://images.unsplash.com/photo-1610349656925-0ec921557c70?w=800&q=80',
+      deskripsi: 'Kain songket dengan benang emas khas Palembang',
       filosofi: 'Simbol kemewahan dan keanggunan',
       harga: 1200000
     },
@@ -124,7 +127,8 @@ const ExplorePage = () => {
       daerah_asal: 'Sumatera Utara',
       warna_dominan: ['Merah', 'Hitam', 'Putih'],
       kategori: 'Geometris',
-      image: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=500',
+      image: 'https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=800&q=80',
+      deskripsi: 'Kain ulos tradisional Batak dengan motif geometris khas',
       filosofi: 'Melambangkan kehangatan dan kasih sayang',
       harga: 850000
     },
@@ -134,7 +138,8 @@ const ExplorePage = () => {
       daerah_asal: 'Tana Toraja, Sulawesi Selatan',
       warna_dominan: ['Merah', 'Kuning', 'Hitam'],
       kategori: 'Geometris',
-      image: 'https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=500',
+      image: 'https://images.unsplash.com/photo-1609127102567-8a9a21dc27d8?w=800&q=80',
+      deskripsi: 'Tenun khas Toraja dengan pola geometris yang indah',
       filosofi: 'Merepresentasikan status sosial dan kehormatan',
       harga: 950000
     },
@@ -144,13 +149,74 @@ const ExplorePage = () => {
       daerah_asal: 'Cirebon, Jawa Barat',
       warna_dominan: ['Biru', 'Putih'],
       kategori: 'Awan',
-      image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=500',
+      image: 'https://images.unsplash.com/photo-1611689342806-0863700ce1e4?w=800&q=80',
+      deskripsi: 'Batik Mega Mendung dengan motif awan khas Cirebon',
       filosofi: 'Melambangkan kesabaran dan keteduhan',
       harga: 650000
+    },
+    {
+      id: 7,
+      nama_motif: 'Batik Kawung',
+      daerah_asal: 'Yogyakarta',
+      warna_dominan: ['Coklat', 'Hitam'],
+      kategori: 'Geometris',
+      image: 'https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=800&q=80',
+      deskripsi: 'Motif batik kawung yang melambangkan kesucian dan umur panjang',
+      filosofi: 'Melambangkan kesempurnaan dan kesucian',
+      harga: 550000
+    },
+    {
+      id: 8,
+      nama_motif: 'Tenun Gringsing Bali',
+      daerah_asal: 'Bali',
+      warna_dominan: ['Merah', 'Kuning', 'Hitam'],
+      kategori: 'Geometris',
+      image: 'https://images.unsplash.com/photo-1606217290941-e9162bd0a8fd?w=800&q=80',
+      deskripsi: 'Tenun gringsing langka dari Bali dengan teknik double ikat',
+      filosofi: 'Melindungi dari bahaya dan memberikan keberuntungan',
+      harga: 2500000
     }
   ];
 
-  const displayMotifs = filteredMotifs.length > 0 ? filteredMotifs : sampleMotifs;
+  // Helper function untuk filter motifs (works with any array)
+  const filterMotifs = (motifsArray) => {
+    let filtered = [...motifsArray];
+
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      filtered = filtered.filter(m =>
+        m.nama_motif?.toLowerCase().includes(query) ||
+        m.daerah_asal?.toLowerCase().includes(query) ||
+        m.deskripsi?.toLowerCase().includes(query) ||
+        m.filosofi?.toLowerCase().includes(query)
+      );
+    }
+
+    if (filters.daerah) {
+      filtered = filtered.filter(m =>
+        m.daerah_asal?.toLowerCase().includes(filters.daerah.toLowerCase())
+      );
+    }
+
+    if (filters.warna) {
+      filtered = filtered.filter(m =>
+        m.warna_dominan?.some(w =>
+          w.toLowerCase().includes(filters.warna.toLowerCase())
+        )
+      );
+    }
+
+    if (filters.kategori) {
+      filtered = filtered.filter(m =>
+        m.kategori?.toLowerCase() === filters.kategori.toLowerCase()
+      );
+    }
+
+    return filtered;
+  };
+
+  // Use filtered motifs from store if available, otherwise filter sample data
+  const displayMotifs = motifs.length > 0 ? filteredMotifs : filterMotifs(sampleMotifs);
 
   return (
     <div className="min-h-screen bg-[#FDFBF5] py-8">
@@ -295,6 +361,7 @@ const ExplorePage = () => {
                 <option value="Sumatera Utara">Sumatera Utara</option>
                 <option value="Toraja">Tana Toraja</option>
                 <option value="Cirebon">Cirebon</option>
+                <option value="Bali">Bali</option>
               </select>
             </div>
 
@@ -316,6 +383,7 @@ const ExplorePage = () => {
                 <option value="Hitam">Hitam</option>
                 <option value="Putih">Putih</option>
                 <option value="Coklat">Coklat</option>
+                <option value="Emas">Emas</option>
               </select>
             </div>
 

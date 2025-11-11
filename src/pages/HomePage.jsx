@@ -59,11 +59,11 @@ const HomePage = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Background Image with Overlay */}
+        {/* Background Image with Overlay - Batik Pattern */}
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1609127102567-8a9a21dc27d8?q=80&w=2070)',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=2070)',
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50"></div>
