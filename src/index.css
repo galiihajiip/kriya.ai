@@ -1,40 +1,35 @@
-@import "tailwindcss";
-
-/* Custom fonts */
+/* Custom fonts - must be before Tailwind imports */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700;900&display=swap');
 
-/* Custom theme colors */
-@theme {
-  --color-primary: #403F2E;
-  --color-accent: #F8C471;
-  --color-background: #FDFBF5;
-  --color-text: #2C2C2C;
-  --color-text-light: #6B6B6B;
-
-  --font-inter: 'Inter', sans-serif;
-  --font-merriweather: 'Merriweather', serif;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Base styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+
+  body {
+    @apply bg-background text-textColor;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Merriweather', serif;
+    @apply font-bold;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
-body {
-  font-family: var(--font-inter);
-  background-color: var(--color-background);
-  color: var(--color-text);
-  line-height: 1.6;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-merriweather);
-  font-weight: 700;
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Custom utilities */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
 }
