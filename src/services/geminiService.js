@@ -22,57 +22,11 @@ function fileToBase64(file) {
 }
 
 /**
- * Mock data untuk fallback jika AI gagal
- */
-function getMockAnalysis(fileName = '') {
-  const mockData = {
-    nama_motif: "Batik Tradisional Nusantara",
-    daerah_asal: "Indonesia",
-    warna_dominan: ["Coklat", "Merah", "Kuning"],
-    filosofi: "Motif ini melambangkan kekayaan budaya dan keindahan tradisi Indonesia yang telah diwariskan turun-temurun.",
-    jenis_produk: "Kain",
-    kategori: "Geometris",
-    confidence: 75,
-    deskripsi: "Kain tradisional Indonesia dengan motif klasik yang menggambarkan keindahan alam dan filosofi kehidupan masyarakat nusantara. Setiap garis dan warna memiliki makna mendalam yang terhubung dengan nilai-nilai leluhur."
-  };
-
-  // Coba deteksi dari nama file
-  const fileNameLower = fileName.toLowerCase();
-
-  if (fileNameLower.includes('sumba')) {
-    return {
-      nama_motif: "Tenun Ikat Sumba",
-      daerah_asal: "Sumba, NTT",
-      warna_dominan: ["Merah", "Hitam", "Putih"],
-      filosofi: "Motif yang melambangkan keberanian dan kekuatan spiritual masyarakat Sumba.",
-      jenis_produk: "Kain Tenun",
-      kategori: "Geometris",
-      confidence: 80,
-      deskripsi: "Tenun ikat Sumba adalah warisan budaya yang telah diwariskan turun-temurun dengan teknik pewarnaan alami dan motif yang sarat makna."
-    };
-  } else if (fileNameLower.includes('batik')) {
-    return {
-      nama_motif: "Batik Tradisional",
-      daerah_asal: "Jawa Tengah",
-      warna_dominan: ["Coklat", "Putih", "Biru"],
-      filosofi: "Melambangkan keanggunan dan filosofi kehidupan masyarakat Jawa.",
-      jenis_produk: "Batik",
-      kategori: "Flora",
-      confidence: 85,
-      deskripsi: "Batik dengan motif klasik yang dibuat dengan teknik tulis atau cap tradisional, mencerminkan kehalusan seni dan budaya Jawa."
-    };
-  }
-
-  return mockData;
-}
-
-/**
  * Menganalisis gambar motif dan memberikan klasifikasi
- * @param {File|string} imageFile - File gambar atau base64 string
- * @returns {Promise<Object>} - Hasil analisis motif
+ * REAL GEMINI API CALL - NO MOCK DATA
  */
 export async function analyzeMotifImage(imageFile) {
-  console.log("🤖 Starting image analysis...");
+  console.log("🤖 [REAL AI] Starting Gemini Vision API analysis...");
 
   try {
     // Validate input
@@ -82,62 +36,60 @@ export async function analyzeMotifImage(imageFile) {
 
     let imageParts;
     let mimeType = 'image/jpeg';
-    let fileName = '';
+    let fileName = imageFile.name || 'unknown';
 
-    if (typeof imageFile === 'string') {
-      // Jika sudah base64 string
-      console.log("📷 Processing base64 string...");
-      imageParts = [{
-        inlineData: {
-          data: imageFile.split(',')[1] || imageFile,
-          mimeType: 'image/jpeg'
-        }
-      }];
-    } else {
-      // Jika File object
-      console.log("📷 Processing file object...", imageFile.name);
-      fileName = imageFile.name;
-      mimeType = imageFile.type || 'image/jpeg';
+    console.log("📷 [REAL AI] Processing file:", fileName, "Type:", imageFile.type);
 
-      const base64 = await fileToBase64(imageFile);
-      const base64Data = base64.split(',')[1];
+    // Convert file to base64
+    const base64 = await fileToBase64(imageFile);
+    const base64Data = base64.split(',')[1];
 
-      if (!base64Data) {
-        throw new Error("Failed to convert image to base64");
-      }
-
-      imageParts = [{
-        inlineData: {
-          data: base64Data,
-          mimeType: mimeType
-        }
-      }];
+    if (!base64Data) {
+      throw new Error("Failed to convert image to base64");
     }
 
-    console.log("🚀 Sending request to Gemini AI...");
+    mimeType = imageFile.type || 'image/jpeg';
 
-    const prompt = `Analisis gambar kain atau motif tradisional Indonesia ini dan berikan informasi dalam format JSON yang valid.
+    imageParts = [{
+      inlineData: {
+        data: base64Data,
+        mimeType: mimeType
+      }
+    }];
 
-PENTING: Berikan HANYA response JSON tanpa teks tambahan, tanpa markdown, tanpa backticks.
+    console.log("🚀 [REAL AI] Sending request to Gemini Vision API...");
+    console.log("📊 [REAL AI] Image size:", base64Data.length, "bytes");
 
-Format JSON:
+    // REAL PROMPT untuk analisis yang akurat
+    const prompt = `Analisis gambar ini secara DETAIL dan AKURAT. Jika ini adalah kain tradisional Indonesia (batik, tenun, songket, dll), berikan informasi lengkap. Jika bukan kain tradisional, jelaskan apa yang terlihat.
+
+Berikan response dalam format JSON yang VALID (tanpa markdown, tanpa backticks):
+
 {
-  "nama_motif": "nama motif atau jenis kain yang terdeteksi",
-  "daerah_asal": "provinsi atau daerah asal (contoh: Yogyakarta, Sumba NTT, Palembang)",
+  "nama_motif": "Nama spesifik motif/kain yang terdeteksi, atau 'Unknown' jika tidak dapat diidentifikasi",
+  "daerah_asal": "Provinsi/daerah asal yang SPESIFIK (contoh: Yogyakarta, Sumba Timur NTT, Palembang), atau 'Tidak Teridentifikasi'",
   "warna_dominan": ["warna1", "warna2", "warna3"],
-  "filosofi": "penjelasan singkat filosofi dan makna motif (2-3 kalimat)",
-  "jenis_produk": "jenis produk (contoh: Kain, Sarung, Selendang, Batik)",
-  "kategori": "kategori motif (contoh: Geometris, Flora, Fauna, Abstrak)",
+  "filosofi": "Penjelasan makna dan filosofi motif jika diketahui, atau deskripsi visual jika tidak",
+  "jenis_produk": "Jenis produk (Batik Tulis, Tenun Ikat, Songket, Kain, dll)",
+  "kategori": "Kategori motif (Geometris, Flora, Fauna, Parang, Kawung, dll)",
   "confidence": 85,
-  "deskripsi": "deskripsi detail tentang motif, teknik pembuatan, dan karakteristiknya (3-4 kalimat)"
-}`;
+  "deskripsi": "Deskripsi DETAIL tentang apa yang terlihat dalam gambar, teknik pembuatan, dan karakteristik khas",
+  "is_traditional_fabric": true
+}
 
-    // Try to call Gemini API
+PENTING:
+- Berikan confidence score yang REALISTIS (rendah jika tidak yakin)
+- Jika bukan kain tradisional, set is_traditional_fabric: false
+- Jika tidak dapat mengidentifikasi, tulis "Unknown" atau "Tidak Teridentifikasi"
+- Berikan response HANYA JSON, tanpa teks lain`;
+
+    // CALL GEMINI API
     const result = await visionModel.generateContent([prompt, ...imageParts]);
     const response = await result.response;
     const text = response.text();
 
-    console.log("✅ Received response from Gemini:", text.substring(0, 200));
+    console.log("✅ [REAL AI] Received response from Gemini API");
+    console.log("📝 [REAL AI] Response preview:", text.substring(0, 300));
 
     // Clean up response - remove markdown code blocks if any
     let cleanedText = text.trim();
@@ -148,99 +100,100 @@ Format JSON:
     // Try to extract JSON
     const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
 
-    if (jsonMatch) {
-      try {
-        const parsed = JSON.parse(jsonMatch[0]);
-        console.log("✅ Successfully parsed AI response");
-
-        // Validate required fields
-        if (!parsed.nama_motif || !parsed.daerah_asal) {
-          console.warn("⚠️ Missing required fields, using mock data");
-          return getMockAnalysis(fileName);
-        }
-
-        return {
-          nama_motif: parsed.nama_motif || "Motif Tradisional",
-          daerah_asal: parsed.daerah_asal || "Indonesia",
-          warna_dominan: Array.isArray(parsed.warna_dominan) ? parsed.warna_dominan : ["Merah", "Kuning", "Biru"],
-          filosofi: parsed.filosofi || "Motif tradisional Indonesia yang sarat makna.",
-          jenis_produk: parsed.jenis_produk || "Kain",
-          kategori: parsed.kategori || "Geometris",
-          confidence: parsed.confidence || 75,
-          deskripsi: parsed.deskripsi || "Kain tradisional Indonesia dengan motif khas."
-        };
-      } catch (parseError) {
-        console.error("❌ JSON parsing error:", parseError);
-        console.log("Using fallback mock data");
-        return getMockAnalysis(fileName);
-      }
+    if (!jsonMatch) {
+      console.error("❌ [REAL AI] No JSON found in response");
+      console.error("Full response:", text);
+      throw new Error("No valid JSON in Gemini response");
     }
 
-    console.warn("⚠️ No valid JSON found in response, using mock data");
-    return getMockAnalysis(fileName);
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      console.log("✅ [REAL AI] Successfully parsed Gemini response");
+      console.log("🎯 [REAL AI] Detected:", parsed.nama_motif, "from", parsed.daerah_asal);
+      console.log("📊 [REAL AI] Confidence:", parsed.confidence + "%");
+
+      // Validate dan normalize data
+      const result = {
+        nama_motif: parsed.nama_motif || "Motif Tidak Teridentifikasi",
+        daerah_asal: parsed.daerah_asal || "Tidak Teridentifikasi",
+        warna_dominan: Array.isArray(parsed.warna_dominan) ? parsed.warna_dominan : [],
+        filosofi: parsed.filosofi || "Informasi filosofi tidak tersedia.",
+        jenis_produk: parsed.jenis_produk || "Kain",
+        kategori: parsed.kategori || "Tidak Teridentifikasi",
+        confidence: parseInt(parsed.confidence) || 50,
+        deskripsi: parsed.deskripsi || "Analisis detail tidak tersedia.",
+        is_traditional_fabric: parsed.is_traditional_fabric !== false
+      };
+
+      return result;
+
+    } catch (parseError) {
+      console.error("❌ [REAL AI] JSON parsing error:", parseError);
+      console.error("Attempted to parse:", jsonMatch[0]);
+      throw new Error("Failed to parse Gemini JSON response");
+    }
 
   } catch (error) {
-    console.error("❌ Error analyzing image:", error.message);
-    console.log("📦 Using mock data as fallback for demo purposes");
+    console.error("❌ [REAL AI] Gemini API Error:", error.message);
+    console.error("Error details:", error);
 
-    // Return mock data sebagai fallback untuk demo
-    const fileName = typeof imageFile === 'string' ? '' : imageFile?.name || '';
-    return getMockAnalysis(fileName);
+    // Re-throw error - TIDAK LANGSUNG FALLBACK KE MOCK
+    throw new Error(`Gemini API Error: ${error.message}`);
   }
 }
 
 /**
  * Generate narasi budaya berdasarkan nama motif
- * @param {string} motifName - Nama motif
- * @param {string} daerahAsal - Daerah asal motif
- * @returns {Promise<string>} - Narasi budaya
+ * REAL GEMINI API CALL
  */
 export async function generateCulturalNarrative(motifName, daerahAsal) {
+  console.log("📚 [REAL AI] Generating cultural narrative for:", motifName);
+
   try {
-    const prompt = `Tuliskan narasi budaya yang menarik dan edukatif tentang motif "${motifName}" dari ${daerahAsal}.
+    const prompt = `Tuliskan narasi budaya yang AKURAT dan edukatif tentang "${motifName}" dari ${daerahAsal}.
 
-Ceritakan tentang:
-1. Sejarah dan asal-usul motif
-2. Makna filosofis dan simbolisme
-3. Proses pembuatan tradisional
+Ceritakan secara DETAIL tentang:
+1. Sejarah dan asal-usul motif ini secara spesifik
+2. Makna filosofis dan simbolisme yang AKURAT
+3. Proses pembuatan tradisional yang sebenarnya
 4. Peran dalam upacara adat atau kehidupan sehari-hari
-5. Cerita rakyat atau legenda yang terkait
+5. Cerita rakyat atau legenda yang terkait (jika ada)
 
-Tulis dalam bahasa Indonesia yang menarik, sekitar 3-4 paragraf, cocok untuk edukasi anak muda.`;
+Tulis dalam bahasa Indonesia yang menarik, sekitar 4-5 paragraf, cocok untuk edukasi.
+Gunakan informasi yang FAKTUAL dan AKURAT. Jika tidak yakin tentang sesuatu, katakan bahwa informasi tersebut bervariasi atau perlu dikonfirmasi.`;
 
     const result = await textModel.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    const narrative = response.text();
+
+    console.log("✅ [REAL AI] Narrative generated, length:", narrative.length);
+    return narrative;
+
   } catch (error) {
-    console.error("Error generating narrative:", error);
-
-    // Fallback narrative
-    return `${motifName} dari ${daerahAsal} merupakan salah satu warisan budaya Indonesia yang memiliki nilai filosofis mendalam. Motif ini telah diwariskan turun-temurun oleh para pengrajin dengan teknik tradisional yang tetap dipertahankan hingga kini.
-
-Setiap warna dan pola dalam motif ini memiliki makna tersendiri yang terkait erat dengan kehidupan masyarakat setempat. Proses pembuatannya memerlukan ketelitian dan kesabaran tinggi, mencerminkan dedikasi para pengrajin dalam melestarikan warisan leluhur.
-
-Dalam kehidupan sehari-hari, kain dengan motif ini sering digunakan dalam berbagai upacara adat dan acara penting. Kehadirannya tidak hanya sebagai busana, tetapi juga sebagai simbol identitas budaya dan penghormatan terhadap tradisi.`;
+    console.error("❌ [REAL AI] Error generating narrative:", error);
+    throw error;
   }
 }
 
 /**
  * Cari motif yang mirip berdasarkan deskripsi
- * @param {string} description - Deskripsi motif yang dicari
- * @returns {Promise<Array>} - Saran motif yang mirip
+ * REAL GEMINI API CALL
  */
 export async function searchSimilarMotifs(description) {
+  console.log("🔍 [REAL AI] Searching similar motifs for:", description);
+
   try {
-    const prompt = `Berdasarkan deskripsi: "${description}", berikan 3 rekomendasi motif kain tradisional Indonesia yang mungkin cocok.
+    const prompt = `Berdasarkan deskripsi: "${description}", berikan 3 rekomendasi motif kain tradisional Indonesia yang BENAR-BENAR mirip atau cocok.
 
-PENTING: Berikan HANYA response JSON array tanpa teks tambahan.
+Berikan informasi yang AKURAT dan FAKTUAL tentang motif-motif yang ada di Indonesia.
 
-Format JSON array:
+Format response dalam JSON array (HANYA JSON, tanpa teks lain):
 [
   {
-    "nama_motif": "nama motif",
-    "daerah_asal": "daerah",
-    "similarity_reason": "alasan kenapa mirip/cocok",
-    "characteristics": "karakteristik khas"
+    "nama_motif": "nama motif yang REAL",
+    "daerah_asal": "daerah asal yang SPESIFIK",
+    "similarity_reason": "alasan kenapa mirip/cocok secara FAKTUAL",
+    "characteristics": "karakteristik khas yang AKURAT"
   }
 ]`;
 
@@ -252,75 +205,80 @@ Format JSON array:
     let cleanedText = text.trim();
     cleanedText = cleanedText.replace(/```json\n?/g, '');
     cleanedText = cleanedText.replace(/```\n?/g, '');
+    cleanedText = cleanedText.trim();
 
     const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]);
+      console.log("✅ [REAL AI] Found", parsed.length, "similar motifs");
+      return parsed;
     }
 
     return [];
   } catch (error) {
-    console.error("Error searching motifs:", error);
+    console.error("❌ [REAL AI] Error searching motifs:", error);
     return [];
   }
 }
 
 /**
  * Generate auto-description untuk produk yang diupload
- * @param {Object} productData - Data produk
- * @returns {Promise<string>} - Deskripsi auto-generated
+ * REAL GEMINI API CALL
  */
 export async function generateProductDescription(productData) {
+  console.log("📝 [REAL AI] Generating product description");
+
   try {
     const { nama_motif, daerah_asal, jenis_produk, warna_dominan } = productData;
 
-    const prompt = `Buatkan deskripsi produk yang menarik untuk e-commerce dari informasi berikut:
+    const prompt = `Buatkan deskripsi produk e-commerce yang MENARIK dan PERSUASIF untuk:
 - Motif: ${nama_motif}
 - Daerah Asal: ${daerah_asal}
 - Jenis Produk: ${jenis_produk}
 - Warna Dominan: ${warna_dominan?.join(', ') || 'Beragam'}
 
 Deskripsi harus:
-1. Menarik dan persuasif untuk pembeli
-2. Menyebutkan keunikan budaya
-3. Menjelaskan kualitas dan kerajinan
-4. Panjang sekitar 2-3 paragraf
-5. Menggunakan bahasa Indonesia yang baik`;
+1. Menarik dan persuasif untuk calon pembeli
+2. Menyebutkan keunikan budaya secara SPESIFIK
+3. Menjelaskan kualitas dan teknik kerajinan yang AKURAT
+4. Professional dan informatif
+5. Panjang sekitar 3-4 paragraf
+6. Menggunakan bahasa Indonesia yang baik dan benar
+
+Fokus pada FAKTA dan KEUNIKAN produk ini secara spesifik.`;
 
     const result = await textModel.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    const description = response.text();
+
+    console.log("✅ [REAL AI] Description generated, length:", description.length);
+    return description;
+
   } catch (error) {
-    console.error("Error generating description:", error);
-
-    // Fallback description
-    const { nama_motif, daerah_asal, jenis_produk } = productData;
-    return `${nama_motif} dari ${daerah_asal} adalah karya seni tradisional Indonesia yang menggabungkan keindahan estetika dengan nilai filosofis mendalam. Setiap detail motif dikerjakan dengan teliti oleh pengrajin berpengalaman menggunakan teknik tradisional yang telah diwariskan turun-temurun.
-
-${jenis_produk} ini menampilkan warna-warna alami yang harmonis dan pola yang mencerminkan kekayaan budaya nusantara. Cocok untuk berbagai acara formal maupun kasual, produk ini tidak hanya indah dipandang tetapi juga nyaman digunakan.
-
-Dengan memiliki produk ini, Anda turut mendukung pelestarian warisan budaya Indonesia dan memberdayakan pengrajin lokal. Investasi yang tepat untuk koleksi fashion Anda yang bermakna.`;
+    console.error("❌ [REAL AI] Error generating description:", error);
+    throw error;
   }
 }
 
 /**
  * Generate quiz questions untuk edukasi
- * @param {string} motifName - Nama motif
- * @returns {Promise<Array>} - Array quiz questions
+ * REAL GEMINI API CALL
  */
 export async function generateQuizQuestions(motifName) {
+  console.log("❓ [REAL AI] Generating quiz for:", motifName);
+
   try {
-    const prompt = `Buatkan 5 pertanyaan quiz interaktif tentang motif "${motifName}" untuk edukasi anak muda.
+    const prompt = `Buatkan 5 pertanyaan quiz interaktif yang AKURAT dan FAKTUAL tentang motif "${motifName}" untuk edukasi.
 
-PENTING: Berikan HANYA response JSON array tanpa teks tambahan.
+Pertanyaan harus berdasarkan FAKTA yang benar tentang motif ini.
 
-Format JSON:
+Format response dalam JSON array (HANYA JSON, tanpa teks lain):
 [
   {
-    "question": "pertanyaan",
+    "question": "pertanyaan yang FAKTUAL",
     "options": ["opsi A", "opsi B", "opsi C", "opsi D"],
     "correct_answer": 0,
-    "explanation": "penjelasan jawaban"
+    "explanation": "penjelasan jawaban yang AKURAT"
   }
 ]`;
 
@@ -332,15 +290,18 @@ Format JSON:
     let cleanedText = text.trim();
     cleanedText = cleanedText.replace(/```json\n?/g, '');
     cleanedText = cleanedText.replace(/```\n?/g, '');
+    cleanedText = cleanedText.trim();
 
     const jsonMatch = cleanedText.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]);
+      console.log("✅ [REAL AI] Generated", parsed.length, "quiz questions");
+      return parsed;
     }
 
     return [];
   } catch (error) {
-    console.error("Error generating quiz:", error);
+    console.error("❌ [REAL AI] Error generating quiz:", error);
     return [];
   }
 }
