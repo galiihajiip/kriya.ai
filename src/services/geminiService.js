@@ -3,11 +3,16 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const API_KEY = "AIzaSyA04psV-26TvZv0qPFbLMdxCJYfTF4SdIU";
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-// Model untuk text generation
-const textModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// CORRECT MODELS yang TERSEDIA di Gemini API (2025):
+// - gemini-2.5-flash: untuk text + vision (multimodal, cepat)
+// - gemini-2.5-pro: untuk text + vision (multimodal, paling powerful)
+// Note: Model lama (gemini-pro, gemini-1.5-pro) sudah RETIRED April 2025
 
-// Model untuk vision (image analysis) - CORRECT MODEL: gemini-1.5-flash support vision!
-const visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// Model untuk text generation - gunakan gemini-2.5-flash (cepat & efisien)
+const textModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+// Model untuk vision (image analysis) - gunakan gemini-2.5-flash (multimodal)
+const visionModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 /**
  * Helper function untuk convert file ke base64
@@ -57,7 +62,7 @@ export async function analyzeMotifImage(imageFile) {
       }
     }];
 
-    console.log("🚀 [REAL AI] Sending request to Gemini 1.5 Flash (with Vision)...");
+    console.log("🚀 [REAL AI] Sending request to Gemini 1.5 Pro (Vision)...");
     console.log("📊 [REAL AI] Image size:", base64Data.length, "bytes");
 
     // REAL PROMPT untuk analisis yang akurat

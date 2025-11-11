@@ -81,9 +81,10 @@ KRIYA.AI adalah platform marketplace dan katalog digital yang memanfaatkan kekua
 - **Zustand** - State management yang lightweight
 
 ### AI & Backend
-- **Google Gemini AI** (Pro & Vision):
-  - `gemini-1.5-flash` - Analisis gambar motif
-  - `gemini-pro` - Generate narasi budaya & quiz
+- **Google Gemini AI** (2025 Models):
+  - `gemini-2.5-flash` - Analisis gambar motif & text generation
+  - Model multimodal yang cepat, efisien, dan akurat
+  - Note: Model lama (gemini-1.5-flash, gemini-pro) sudah retired April 2025
 - **Gemini API Key**: `AIzaSyA04psV-26TvZv0qPFbLMdxCJYfTF4SdIU`
 
 ### Development Tools
@@ -219,9 +220,9 @@ kriya.ai/
 // Gemini API Base URL
 https://generativelanguage.googleapis.com/v1beta/models/
 
-// Models Used
-- gemini-1.5-flash (Vision)
-- gemini-pro (Text)
+// Models Used (2025)
+- gemini-2.5-flash (Multimodal: Vision + Text)
+- Retired: gemini-1.5-flash, gemini-pro (April 2025)
 ```
 
 ---
