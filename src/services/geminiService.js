@@ -4,10 +4,10 @@ const API_KEY = "AIzaSyA04psV-26TvZv0qPFbLMdxCJYfTF4SdIU";
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 // Model untuk text generation
-const textModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+const textModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// Model untuk vision (image analysis) - UPDATED: gunakan gemini-pro-vision
-const visionModel = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+// Model untuk vision (image analysis) - CORRECT MODEL: gemini-1.5-flash support vision!
+const visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 /**
  * Helper function untuk convert file ke base64
@@ -57,7 +57,7 @@ export async function analyzeMotifImage(imageFile) {
       }
     }];
 
-    console.log("🚀 [REAL AI] Sending request to Gemini Pro Vision API...");
+    console.log("🚀 [REAL AI] Sending request to Gemini 1.5 Flash (with Vision)...");
     console.log("📊 [REAL AI] Image size:", base64Data.length, "bytes");
 
     // REAL PROMPT untuk analisis yang akurat
